@@ -2,11 +2,44 @@ import openpyxl
 from zipfile import ZipFile
 import os
 
+def OpenXlsxFile(fileName):
+    file = openpyxl.open(fileName, read_only=True)
+    return file
+
+def GetIndexOfDay(sheet):
+    daysOfWeek = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота"]
+    daysNum = 0
+    dayIndex = list()
+    for row in range(1, sheet.max_row + 1):
+        if sheet[row][0].value:
+            if daysOfWeek[daysNum] in sheet[row][0].value.lower():
+                daysNum += 1
+                dayIndex.append(row)
+            if daysNum > 5:
+                break
+
+    row = dayIndex[5]
+    while sheet[row][1].value:
+        row += 1
+    dayIndex.append(row)
+    return dayIndex
+
+def Redactor(dCNum, dCName, audithory):
+    print("")
+
+def ListJoin(list, fileName):
+    for i in range(len(list)):
+        list[i] = "\n".join(map(str, list[i]))
+    list = "\n\n".join(map(str, list))
+    with open(fileName, "w") as openedFile:
+        openedFile.write(list)
+
 def Schedule284Create():
-    xlsx284File = openpyxl.open("284_s_yanv.xlsx", read_only=True)
-    sheet = xlsx284File.active
+    sheet = OpenXlsxFile("284_s_yanv.xlsx").active
     text = list()
-    mondaySchedule = sheet.iter_rows(min_row=9, max_row=14, min_col=2, max_col=4)
+    indexOfDay = GetIndexOfDay(sheet)
+
+    mondaySchedule = sheet.iter_rows(min_row=indexOfDay[0], max_row=indexOfDay[1] - 1, min_col=2, max_col=4)
     for dCNum, dCName, audithory in mondaySchedule:
         if audithory.value:
             x = audithory.value
@@ -17,14 +50,11 @@ def Schedule284Create():
             text.append([dCNum.value, dCName.value, "___________", audithory])
         else:
             text.append([dCNum.value, "", "___________", ""])
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("monday.txt", "w") as mondayFile:
-        mondayFile.write(text)
+
+    ListJoin(text, "monday.txt")
 
     text = list()
-    tuesdaySchedule = sheet.iter_rows(min_row=15, max_row=19, min_col=2, max_col=4)
+    tuesdaySchedule = sheet.iter_rows(min_row=indexOfDay[1], max_row=indexOfDay[2] - 1, min_col=2, max_col=4)
     for dCNum, dCName, audithory in tuesdaySchedule:
         if audithory.value:
             x = audithory.value
@@ -36,14 +66,10 @@ def Schedule284Create():
         else:
             text.append([dCNum.value, "", "___________", ""])
 
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("tuesday.txt", "w") as tuesdayFile:
-        tuesdayFile.write(text)
+    ListJoin(text, "tuesday.txt")
 
     text = list()
-    wednesdaySchedule = sheet.iter_rows(min_row=20, max_row=24, min_col=2, max_col=4)
+    wednesdaySchedule = sheet.iter_rows(min_row=indexOfDay[2], max_row=indexOfDay[3] - 1, min_col=2, max_col=4)
     for dCNum, dCName, audithory in wednesdaySchedule:
         if audithory.value:
             x = audithory.value
@@ -55,14 +81,10 @@ def Schedule284Create():
         else:
             text.append([dCNum.value, "", "___________", ""])
 
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("wednesday.txt", "w") as wednesdayFile:
-        wednesdayFile.write(text)
+    ListJoin(text, "wednesday.txt")
 
     text = list()
-    thursdaySchedule = sheet.iter_rows(min_row=25, max_row=29, min_col=2, max_col=4)
+    thursdaySchedule = sheet.iter_rows(min_row=indexOfDay[3], max_row=indexOfDay[4] - 1, min_col=2, max_col=4)
     for dCNum, dCName, audithory in thursdaySchedule:
         if audithory.value:
             x = audithory.value
@@ -74,14 +96,10 @@ def Schedule284Create():
         else:
             text.append([dCNum.value, "", "___________", ""])
 
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("thursday.txt", "w") as thursdayFile:
-        thursdayFile.write(text)
+    ListJoin(text, "thursday.txt")
 
     text = list()
-    fridaySchedule = sheet.iter_rows(min_row=30, max_row=34, min_col=2, max_col=4)
+    fridaySchedule = sheet.iter_rows(min_row=indexOfDay[4], max_row=indexOfDay[5] - 1, min_col=2, max_col=4)
     for dCNum, dCName, audithory in fridaySchedule:
         if audithory.value:
             x = audithory.value
@@ -93,14 +111,10 @@ def Schedule284Create():
         else:
             text.append([dCNum.value, "", "___________", ""])
 
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("friday.txt", "w") as fridayFile:
-        fridayFile.write(text)
+    ListJoin(text, "friday.txt")
 
     text = list()
-    saturdaySchedule = sheet.iter_rows(min_row=35, max_row=39, min_col=2, max_col=4)
+    saturdaySchedule = sheet.iter_rows(min_row=indexOfDay[5], max_row=indexOfDay[6] - 1, min_col=2, max_col=4)
     for dCNum, dCName, audithory in saturdaySchedule:
         if audithory.value:
             x = audithory.value
@@ -112,12 +126,10 @@ def Schedule284Create():
         else:
             text.append([dCNum.value, "", "___________", ""])
 
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("saturday.txt", "w") as saturdayFile:
-        saturdayFile.write(text)
+    ListJoin(text, "saturday.txt")
 
+    # os.mkdir("284")
+    # catalog = "poshelnahui"
     with ZipFile("284.zip", "w") as schedule284:
         schedule284.write("monday.txt")
         schedule284.write("tuesday.txt")
@@ -133,136 +145,5 @@ def Schedule284Create():
     os.remove("friday.txt")
     os.remove("saturday.txt")
 
-def Schedule285Create():
-    xlsx285File = openpyxl.open("285_s_yanv.xlsx", read_only=True)
-    sheet = xlsx285File.active
-    text = list()
-    mondaySchedule = sheet.iter_rows(min_row=9, max_row=14, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in mondaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", "").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("monday.txt", "w") as mondayFile:
-        mondayFile.write(text)
-
-    text = list()
-    tuesdaySchedule = sheet.iter_rows(min_row=15, max_row=19, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in tuesdaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", "").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("tuesday.txt", "w") as tuesdayFile:
-        tuesdayFile.write(text)
-
-    text = list()
-    wednesdaySchedule = sheet.iter_rows(min_row=20, max_row=24, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in wednesdaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", "").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("wednesday.txt", "w") as wednesdayFile:
-        wednesdayFile.write(text)
-
-    text = list()
-    thursdaySchedule = sheet.iter_rows(min_row=25, max_row=29, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in thursdaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", "").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("thursday.txt", "w") as thursdayFile:
-        thursdayFile.write(text)
-
-    text = list()
-    fridaySchedule = sheet.iter_rows(min_row=30, max_row=34, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in fridaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", "").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("friday.txt", "w") as fridayFile:
-        fridayFile.write(text)
-
-    text = list()
-    saturdaySchedule = sheet.iter_rows(min_row=35, max_row=39, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in saturdaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", " ").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-
-    for i in range(len(text)):
-        text[i] = "\n".join(map(str, text[i]))
-    text = "\n".join(map(str, text))
-    with open("saturday.txt", "w") as saturdayFile:
-        saturdayFile.write(text)
-
-    with ZipFile("285.zip", "w") as schedule284:
-        schedule284.write("monday.txt")
-        schedule284.write("tuesday.txt")
-        schedule284.write("wednesday.txt")
-        schedule284.write("thursday.txt")
-        schedule284.write("friday.txt")
-        schedule284.write("saturday.txt")
-
-    os.remove("monday.txt")
-    os.remove("tuesday.txt")
-    os.remove("wednesday.txt")
-    os.remove("thursday.txt")
-    os.remove("friday.txt")
-    os.remove("saturday.txt")
 
 Schedule284Create()
-Schedule285Create()
