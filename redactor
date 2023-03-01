@@ -24,8 +24,18 @@ def GetIndexOfDay(sheet):
     dayIndex.append(row)
     return dayIndex
 
-def Redactor(dCNum, dCName, audithory):
-    print("")
+def Redactor(list, sheet):
+    for dCNum, dCName, audithory in sheet:
+        if audithory.value:
+            audithoryValue = audithory.value
+            if "с/з" in audithoryValue:
+                audithoryValue = audithoryValue.replace("с/з,", "с/з")
+            audithory = audithoryValue.replace("\n", "").split(",")[:-1]
+            audithory = "\n".join(audithory)
+            list.append([dCNum.value, dCName.value, "___________", audithory])
+        else:
+            list.append([dCNum.value, "", "___________", ""])
+    return list
 
 def ListJoin(list, fileName):
     for i in range(len(list)):
@@ -34,116 +44,60 @@ def ListJoin(list, fileName):
     with open(fileName, "w") as openedFile:
         openedFile.write(list)
 
+def ZipFileOpen(archiveName):
+    with ZipFile(archiveName, "w") as archive:
+        archive.write("monday.txt")
+        archive.write("tuesday.txt")
+        archive.write("wednesday.txt")
+        archive.write("thursday.txt")
+        archive.write("friday.txt")
+        archive.write("saturday.txt")
+
+def RemoveTxtFiles(monday, tuesday, wednesday, thursday ,friday, saturday):
+    os.remove(monday)
+    os.remove(tuesday)
+    os.remove(wednesday)
+    os.remove(thursday)
+    os.remove(friday)
+    os.remove(saturday)
+
 def Schedule284Create():
     sheet = OpenXlsxFile("284_s_yanv.xlsx").active
-    text = list()
     indexOfDay = GetIndexOfDay(sheet)
 
+    text = list()
     mondaySchedule = sheet.iter_rows(min_row=indexOfDay[0], max_row=indexOfDay[1] - 1, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in mondaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", "").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-
+    Redactor(text, mondaySchedule)
     ListJoin(text, "monday.txt")
 
     text = list()
     tuesdaySchedule = sheet.iter_rows(min_row=indexOfDay[1], max_row=indexOfDay[2] - 1, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in tuesdaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", "").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-
+    Redactor(text, tuesdaySchedule)
     ListJoin(text, "tuesday.txt")
 
     text = list()
     wednesdaySchedule = sheet.iter_rows(min_row=indexOfDay[2], max_row=indexOfDay[3] - 1, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in wednesdaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", "").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-
+    Redactor(text, wednesdaySchedule)
     ListJoin(text, "wednesday.txt")
 
     text = list()
     thursdaySchedule = sheet.iter_rows(min_row=indexOfDay[3], max_row=indexOfDay[4] - 1, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in thursdaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", "").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-
+    Redactor(text, thursdaySchedule)
     ListJoin(text, "thursday.txt")
 
     text = list()
     fridaySchedule = sheet.iter_rows(min_row=indexOfDay[4], max_row=indexOfDay[5] - 1, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in fridaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", "").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-
+    Redactor(text, fridaySchedule)
     ListJoin(text, "friday.txt")
 
     text = list()
     saturdaySchedule = sheet.iter_rows(min_row=indexOfDay[5], max_row=indexOfDay[6] - 1, min_col=2, max_col=4)
-    for dCNum, dCName, audithory in saturdaySchedule:
-        if audithory.value:
-            x = audithory.value
-            if "с/з" in x:
-                x = x.replace("с/з,", "с/з")
-            audithory = x.replace("\n", " ").split(",")[:-1]
-            audithory = "\n".join(audithory)
-            text.append([dCNum.value, dCName.value, "___________", audithory])
-        else:
-            text.append([dCNum.value, "", "___________", ""])
-
+    Redactor(text, saturdaySchedule)
     ListJoin(text, "saturday.txt")
 
-    # os.mkdir("284")
-    # catalog = "poshelnahui"
-    with ZipFile("284.zip", "w") as schedule284:
-        schedule284.write("monday.txt")
-        schedule284.write("tuesday.txt")
-        schedule284.write("wednesday.txt")
-        schedule284.write("thursday.txt")
-        schedule284.write("friday.txt")
-        schedule284.write("saturday.txt")
+    ZipFileOpen("284.zip")
 
-    os.remove("monday.txt")
-    os.remove("tuesday.txt")
-    os.remove("wednesday.txt")
-    os.remove("thursday.txt")
-    os.remove("friday.txt")
-    os.remove("saturday.txt")
+    RemoveTxtFiles("monday.txt", "tuesday.txt", "wednesday.txt", "thursday.txt", "friday.txt", "saturday.txt")
 
 
 Schedule284Create()
