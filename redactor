@@ -2,9 +2,17 @@ import openpyxl
 from zipfile import ZipFile
 import os
 
-def OpenXlsxFile(fileName):
-    file = openpyxl.open(fileName, read_only=True)
-    return file
+def GetFileName():
+    xlsxFileName = ""
+    content = os.listdir()
+    try:
+        for i in range(len(content)):
+            if ".xlsx" in content[i]:
+                xlsxFileName = content[i]
+    except:
+        print("Xlsx file is not found, please enter it in the directory")
+    else:
+        return xlsxFileName
 
 def GetIndexOfDay(sheet):
     daysOfWeek = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота"]
@@ -44,25 +52,34 @@ def ListJoin(list, fileName):
     with open(fileName, "w") as openedFile:
         openedFile.write(list)
 
-def ZipFileOpen(archiveName):
+def ZipFileOpen(archiveName, monday, tuesday, wednesday, thursday, friday, saturday):
     with ZipFile(archiveName, "w") as archive:
-        archive.write("monday.txt")
-        archive.write("tuesday.txt")
-        archive.write("wednesday.txt")
-        archive.write("thursday.txt")
-        archive.write("friday.txt")
-        archive.write("saturday.txt")
+        archive.write(monday)
+        archive.write(tuesday)
+        archive.write(wednesday)
+        archive.write(thursday)
+        archive.write(friday)
+        archive.write(saturday)
 
-def RemoveTxtFiles(monday, tuesday, wednesday, thursday ,friday, saturday):
+def RemoveFiles(monday, tuesday, wednesday, thursday ,friday, saturday, scheduleFile):
     os.remove(monday)
     os.remove(tuesday)
     os.remove(wednesday)
     os.remove(thursday)
     os.remove(friday)
     os.remove(saturday)
+    os.remove(scheduleFile)
+
+def RemoveOldScheduleXlsxFiles():
+    content = os.listdir()
+    for i in range(len(content)):
+        if ".zip" in content[i]:
+            return
 
 def Schedule284Create():
-    sheet = OpenXlsxFile("284_s_yanv.xlsx").active
+    scheduleFileName = GetFileName()
+    file = openpyxl.open(scheduleFileName, read_only=True)
+    sheet = file.active
     indexOfDay = GetIndexOfDay(sheet)
 
     text = list()
@@ -95,9 +112,10 @@ def Schedule284Create():
     Redactor(text, saturdaySchedule)
     ListJoin(text, "saturday.txt")
 
-    ZipFileOpen("284.zip")
+    file.close()
 
-    RemoveTxtFiles("monday.txt", "tuesday.txt", "wednesday.txt", "thursday.txt", "friday.txt", "saturday.txt")
+    ZipFileOpen(scheduleFileName[:-5] + ".zip", "monday.txt", "tuesday.txt", "wednesday.txt", "thursday.txt", "friday.txt", "saturday.txt")
 
+    RemoveFiles("monday.txt", "tuesday.txt", "wednesday.txt", "thursday.txt", "friday.txt", "saturday.txt", scheduleFileName)
 
 Schedule284Create()
