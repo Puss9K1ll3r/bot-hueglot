@@ -66,11 +66,14 @@ def RemoveFiles(monday, tuesday, wednesday, thursday ,friday, saturday, schedule
     os.remove(saturday)
     os.remove(scheduleFile)
 
-def RemoveOldScheduleXlsxFiles():
+def RemoveOldScheduleArchives(archiveName):
     content = os.listdir()
     for i in range(len(content)):
         if ".zip" in content[i]:
-            return
+            if archiveName[:3] in content[i] and archiveName != content[i]:
+                os.remove(content[i])
+            else:
+                continue
 
 def Schedule284Create():
         try:
@@ -119,5 +122,7 @@ def Schedule284Create():
 
         RemoveFiles("monday.txt", "tuesday.txt", "wednesday.txt", "thursday.txt", "friday.txt", "saturday.txt",
                     scheduleFileName)
+
+        RemoveOldScheduleArchives
 
 Schedule284Create()
