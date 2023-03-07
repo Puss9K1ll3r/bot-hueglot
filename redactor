@@ -43,7 +43,7 @@ def Redactor(list, sheet):
 
 def ListJoin(list, fileName):
     for i in range(len(list)):
-        list[i] = "\n".join(map(str, list[i]))
+        list[i] = "\n".join(map(str, list[i])) + "\n"
     list = "\n\n".join(map(str, list))
     with open(fileName, "w") as openedFile:
         openedFile.write(list)
