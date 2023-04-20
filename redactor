@@ -8,9 +8,11 @@ def GetFileName():
     for i in range(len(content)):
         if ".xlsx" in content[i]:
             xlsxFileName = content[i]
+        elif ".xls" in content[i]:
+            xlsxFileName = content[i]
     return xlsxFileName
 
-def GetIndexOfDay(sheet):
+def GetIndexesOfDays(sheet):
     daysOfWeek = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота"]
     daysNum = 0
     dayIndex = list()
@@ -21,52 +23,57 @@ def GetIndexOfDay(sheet):
                 dayIndex.append(row)
             if daysNum > 5:
                 break
-
-    row = dayIndex[5]
+    row = dayIndex[-1]
     while sheet[row][1].value:
         row += 1
     dayIndex.append(row)
     return dayIndex
 
-def Redactor(list, sheet):
-    for dCNum, dCName, audithory in sheet:
+def Redactor(scheduleContent):
+    dCNameValue = True
+    text = list()
+    for dCNum, dCName, audithory in scheduleContent:
+        if dCName.value:
+            dCNameValue = dCName.value
+            if "\n" in dCNameValue:
+                dCNameValue = dCNameValue.replace("\n", "\n\n")
         if audithory.value:
             audithoryValue = audithory.value
             if "с/з" in audithoryValue:
                 audithoryValue = audithoryValue.replace("с/з,", "с/з")
             audithory = audithoryValue.replace("\n", "").split(",")[:-1]
             audithory = "\n".join(audithory)
-            list.append([dCNum.value, dCName.value, "___________", audithory])
+            text.append([dCNum.value, dCNameValue, "___________", audithory])
         else:
-            list.append([dCNum.value, "", "___________", ""])
-    return list
+            text.append([dCNum.value, "___________", ""])
+    return text
 
-def ListJoin(list, fileName):
-    for i in range(len(list)):
-        list[i] = "\n".join(map(str, list[i]))
-    list = "\n\n".join(map(str, list))
+def ListJoin(text, fileName):
+    for i in range(len(text)):
+        text[i] = "\n".join(map(str, text[i]))
+    text = "\n\n".join(map(str, text))
     with open(fileName, "w") as openedFile:
-        openedFile.write(list)
+        openedFile.write(text)
 
-def ZipFileOpen(archiveName, monday, tuesday, wednesday, thursday, friday, saturday):
+def ZipFileOpen(archiveName, filesWithSchedule):
+    if ".xlsx" in archiveName:
+        archiveName = archiveName[:-5] + ".zip"
+    else:
+        archiveName = archiveName[:-4] + ".zip"
     with ZipFile(archiveName, "w") as archive:
-        archive.write(monday)
-        archive.write(tuesday)
-        archive.write(wednesday)
-        archive.write(thursday)
-        archive.write(friday)
-        archive.write(saturday)
+        for i in range(len(filesWithSchedule)):
+            archive.write(filesWithSchedule[i])
 
-def RemoveFiles(monday, tuesday, wednesday, thursday ,friday, saturday, scheduleFile):
-    os.remove(monday)
-    os.remove(tuesday)
-    os.remove(wednesday)
-    os.remove(thursday)
-    os.remove(friday)
-    os.remove(saturday)
-    os.remove(scheduleFile)
+def RemoveFiles(scheduleFiles, scheduleXlsxFile):
+    for i in range(len(scheduleFiles)):
+        os.remove(scheduleFiles[i])
+    os.remove(scheduleXlsxFile)
 
 def RemoveOldScheduleArchives(archiveName):
+    if ".xlsx" in archiveName:
+        archiveName = archiveName[:-5] + ".zip"
+    else:
+        archiveName = archiveName[:-4] + ".zip"
     content = os.listdir()
     for i in range(len(content)):
         if ".zip" in content[i]:
@@ -75,54 +82,63 @@ def RemoveOldScheduleArchives(archiveName):
             else:
                 continue
 
-def Schedule284Create():
-        try:
+def ScheduleCreate():
+    try:
         scheduleFileName = GetFileName()
         file = openpyxl.open(scheduleFileName, read_only=True)
     except:
-        print("Xlsx files didnt found in the directory, please check it.")
+        print("Excel files didnt found in the directory, please check it.")
     else:
         sheet = file.active
-        indexOfDay = GetIndexOfDay(sheet)
+        indexesOfDays = GetIndexesOfDays(sheet)
+        daysOfWeek = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота"]
+        scheduleFiles = list()
 
-        text = list()
-        mondaySchedule = sheet.iter_rows(min_row=indexOfDay[0], max_row=indexOfDay[1] - 1, min_col=2, max_col=4)
-        Redactor(text, mondaySchedule)
-        ListJoin(text, "monday.txt")
-
-        text = list()
-        tuesdaySchedule = sheet.iter_rows(min_row=indexOfDay[1], max_row=indexOfDay[2] - 1, min_col=2, max_col=4)
-        Redactor(text, tuesdaySchedule)
-        ListJoin(text, "tuesday.txt")
-
-        text = list()
-        wednesdaySchedule = sheet.iter_rows(min_row=indexOfDay[2], max_row=indexOfDay[3] - 1, min_col=2, max_col=4)
-        Redactor(text, wednesdaySchedule)
-        ListJoin(text, "wednesday.txt")
-
-        text = list()
-        thursdaySchedule = sheet.iter_rows(min_row=indexOfDay[3], max_row=indexOfDay[4] - 1, min_col=2, max_col=4)
-        Redactor(text, thursdaySchedule)
-        ListJoin(text, "thursday.txt")
-
-        text = list()
-        fridaySchedule = sheet.iter_rows(min_row=indexOfDay[4], max_row=indexOfDay[5] - 1, min_col=2, max_col=4)
-        Redactor(text, fridaySchedule)
-        ListJoin(text, "friday.txt")
-
-        text = list()
-        saturdaySchedule = sheet.iter_rows(min_row=indexOfDay[5], max_row=indexOfDay[6] - 1, min_col=2, max_col=4)
-        Redactor(text, saturdaySchedule)
-        ListJoin(text, "saturday.txt")
-
+        for i in range(len(indexesOfDays) - 1):
+            for j in range(len(daysOfWeek)):
+                if daysOfWeek[0] in sheet[indexesOfDays[i]][0].value.lower():
+                    schedule = sheet.iter_rows(min_row=indexesOfDays[i], max_row=indexesOfDays[i + 1] - 1,
+                                                     min_col=2, max_col=4)
+                    ListJoin(Redactor(schedule), "monday.txt")
+                    scheduleFiles.append("monday.txt")
+                    break
+                elif daysOfWeek[1] in sheet[indexesOfDays[i]][0].value.lower():
+                    schedule = sheet.iter_rows(min_row=indexesOfDays[i], max_row=indexesOfDays[i + 1] - 1,
+                                                     min_col=2, max_col=4)
+                    ListJoin(Redactor(schedule), "tuesday.txt")
+                    scheduleFiles.append("tuesday.txt")
+                    break
+                elif daysOfWeek[2] in sheet[indexesOfDays[i]][0].value.lower():
+                    schedule = sheet.iter_rows(min_row=indexesOfDays[i], max_row=indexesOfDays[i + 1] - 1,
+                                                     min_col=2, max_col=4)
+                    ListJoin(Redactor(schedule), "wednesday.txt")
+                    scheduleFiles.append("wednesday.txt")
+                    break
+                elif daysOfWeek[3] in sheet[indexesOfDays[i]][0].value.lower():
+                    schedule = sheet.iter_rows(min_row=indexesOfDays[i], max_row=indexesOfDays[i + 1] - 1,
+                                                     min_col=2, max_col=4)
+                    ListJoin(Redactor(schedule), "thursday.txt")
+                    scheduleFiles.append("thursday.txt")
+                    break
+                elif daysOfWeek[4] in sheet[indexesOfDays[i]][0].value.lower():
+                    schedule = sheet.iter_rows(min_row=indexesOfDays[i], max_row=indexesOfDays[i + 1] - 1,
+                                                     min_col=2, max_col=4)
+                    ListJoin(Redactor(schedule), "friday.txt")
+                    scheduleFiles.append("friday.txt")
+                    break
+                elif daysOfWeek[5] in sheet[indexesOfDays[i]][0].value.lower():
+                    schedule = sheet.iter_rows(min_row=indexesOfDays[i], max_row=indexesOfDays[i + 1] - 1,
+                                                     min_col=2, max_col=4)
+                    ListJoin(Redactor(schedule), "saturday.txt")
+                    scheduleFiles.append("saturday.txt")
+                    break
+        print(scheduleFiles)
         file.close()
 
-        ZipFileOpen(scheduleFileName[:-5] + ".zip", "monday.txt", "tuesday.txt", "wednesday.txt", "thursday.txt",
-                    "friday.txt", "saturday.txt")
+        RemoveOldScheduleArchives(GetFileName())
 
-        RemoveFiles("monday.txt", "tuesday.txt", "wednesday.txt", "thursday.txt", "friday.txt", "saturday.txt",
-                    scheduleFileName)
+        ZipFileOpen(GetFileName(), scheduleFiles)
 
-        RemoveOldScheduleArchives
+        RemoveFiles(scheduleFiles, scheduleFileName)
 
-Schedule284Create()
+ScheduleCreate()
